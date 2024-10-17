@@ -1,5 +1,7 @@
 ﻿using Domain.Entities;
 using Domain.Repositories;
+using Infrastructure.Settings;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 namespace Infrastructure.Repositories;
@@ -8,16 +10,15 @@ public class MongoUserRepository : IUserRepository
 {
     private readonly IMongoCollection<User> _mongoUsers;
 
-    public MongoUserRepository(IMongoClient mongoClient)
+    public MongoUserRepository(IMongoClient mongoClient, IOptions<MongoSettings> mongoSettings)
     {
-        var database = mongoClient.GetDatabase("UserDB");
-        _mongoUsers = database.GetCollection<User>("Users");
+        var database = mongoClient.GetDatabase(mongoSettings.Value.DatabaseName);
+        _mongoUsers = database.GetCollection<User>(mongoSettings.Value.UserCollectionName);
 
         // Create compound index on email and createdAt for optimized querying
         var indexKeys = Builders<User>.IndexKeys
             .Ascending(user => user.Email)
             .Ascending(user => user.CreatedAt);
-        _mongoUsers.Indexes.CreateOne(new CreateIndexModel<User>(indexKeys));
     }
 
     public async Task AddAsync(User user)

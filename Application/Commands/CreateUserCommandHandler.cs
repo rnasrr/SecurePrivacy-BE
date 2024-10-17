@@ -1,11 +1,19 @@
 ﻿using Domain.Repositories;
 using MediatR;
-using Application.Commands;
 using Domain.Entities;
+using FluentValidation;
 
 
-namespace Application.Handlers;
+namespace Application.Commands;
 
+public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
+{
+    public CreateUserCommandValidator()
+    {
+        RuleFor(x => x.Name).NotEmpty().WithMessage("Name is required.");
+        RuleFor(x => x.Email).NotEmpty().WithMessage("Email is required.").EmailAddress().WithMessage("A valid email is required.");
+    }
+}
 
 public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand>
 {
